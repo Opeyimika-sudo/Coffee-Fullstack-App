@@ -29,7 +29,7 @@ def create_app(test_config=None):
     !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
     !! Running this funciton will add one
     '''
-    # db_drop_and_create_all()
+    db_drop_and_create_all()
 
     # ROUTES
     '''
@@ -67,7 +67,7 @@ def create_app(test_config=None):
         returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
             or appropriate status code indicating reason for failure
     '''
-    @app.route('/drinks-detail', methods=['GET'])
+    @app.route('/drinks-detail', methods=["GET"])
     @requires_auth('get:drinks-detail')   
     def get_drink_in_detail(payload):
         drinks = Drink.query.all()
@@ -76,9 +76,6 @@ def create_app(test_config=None):
 
         for drink in drinks:
             all_drinks.append(drink.long())
-
-        print(all_drinks)
-        print(type(all_drinks))
 
         return jsonify({
             'status': 200,
@@ -97,9 +94,8 @@ def create_app(test_config=None):
         or appropriate status code indicating reason for failure
     # '''
     @app.route('/drinks', methods=['POST'])
-    @requires_auth('post:drinks')     
+    @requires_auth("post:drinks")     
     def add_new_drink(payload):
-        # print(token)
         drink = request.get_json()
 
         if len(drink) == 0:
@@ -159,7 +155,7 @@ def create_app(test_config=None):
 
             return jsonify({
                 "success": True,
-                "drinks": drink.long()
+                "drinks": [drink.long()]
             })
 
         except:
@@ -238,15 +234,15 @@ def create_app(test_config=None):
     @TODO implement error handler for AuthError
         error handler should conform to general task above
     '''
-    # @app.errorhandler(AuthError)
-    # def auth_error(error):
-    #     return jsonify({
-    #         'success': False,
-    #         'status': 401,
-    #         'message': 'Authentication error'
-    #     }), AuthError
+    @app.errorhandler(AuthError)
+    def return_error_code(error):
+        message = [str(x) for x in error.args]
+        status_code = error.status_code
 
-   
-
+        return jsonify({
+            "success": False,
+            "error": status_code,
+            "message": message
+        }), status_code
 
     return app
